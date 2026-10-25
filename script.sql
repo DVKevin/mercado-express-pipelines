@@ -7,7 +7,8 @@
 --   tds_users_mercado (1) ---- (N) tb_pedido
 --   tb_pedido (1) ---- (N) tb_item_pedido (N) ---- (1) produtos
 --
--- Execute no Query editor do Banco (Portal Azure) ANTES do 1º deploy.
+-- Execute no Editor de Consultas do Banco (Portal Azure) ANTES do 1º deploy.
+-- (sem separadores GO: roda inteiro de uma vez no Editor de Consultas)
 -- ============================================================
 
 IF OBJECT_ID('tb_email', 'U')               IS NOT NULL DROP TABLE tb_email;
@@ -16,7 +17,6 @@ IF OBJECT_ID('tb_pedido', 'U')              IS NOT NULL DROP TABLE tb_pedido;
 IF OBJECT_ID('tds_sec_mvc_tb_mercado', 'U') IS NOT NULL DROP TABLE tds_sec_mvc_tb_mercado;
 IF OBJECT_ID('tb_fornecedor', 'U')          IS NOT NULL DROP TABLE tb_fornecedor;
 IF OBJECT_ID('tds_users_mercado', 'U')      IS NOT NULL DROP TABLE tds_users_mercado;
-GO
 
 -- Usuários (login do sistema)
 CREATE TABLE tds_users_mercado (
@@ -30,7 +30,6 @@ CREATE TABLE tds_users_mercado (
     CONSTRAINT uk_users_mercado_email UNIQUE (email),
     CONSTRAINT ck_users_mercado_role CHECK (role IN ('ADMIN', 'CLIENTE'))
 );
-GO
 
 -- Fornecedores (tabela 1 do relacionamento 1:N)
 CREATE TABLE tb_fornecedor (
@@ -43,7 +42,6 @@ CREATE TABLE tb_fornecedor (
     CONSTRAINT pk_fornecedor PRIMARY KEY (id),
     CONSTRAINT uk_fornecedor_cnpj UNIQUE (cnpj)
 );
-GO
 
 -- Produtos (tabela N do relacionamento 1:N com fornecedor)
 CREATE TABLE tds_sec_mvc_tb_mercado (
@@ -59,7 +57,6 @@ CREATE TABLE tds_sec_mvc_tb_mercado (
     CONSTRAINT pk_produto PRIMARY KEY (id),
     CONSTRAINT fk_produto_fornecedor FOREIGN KEY (fornecedor_id) REFERENCES tb_fornecedor (id)
 );
-GO
 
 -- Pedidos
 CREATE TABLE tb_pedido (
@@ -76,7 +73,6 @@ CREATE TABLE tb_pedido (
     CONSTRAINT pk_pedido PRIMARY KEY (id),
     CONSTRAINT fk_pedido_usuario FOREIGN KEY (usuario_id) REFERENCES tds_users_mercado (id)
 );
-GO
 
 -- Itens do pedido
 CREATE TABLE tb_item_pedido (
@@ -90,7 +86,6 @@ CREATE TABLE tb_item_pedido (
     CONSTRAINT fk_item_pedido_pedido  FOREIGN KEY (pedido_id)  REFERENCES tb_pedido (id),
     CONSTRAINT fk_item_pedido_produto FOREIGN KEY (produto_id) REFERENCES tds_sec_mvc_tb_mercado (id)
 );
-GO
 
 -- Controle de e-mails enviados
 CREATE TABLE tb_email (
@@ -105,7 +100,6 @@ CREATE TABLE tb_email (
     erro        NVARCHAR(500)  NULL,
     CONSTRAINT pk_email PRIMARY KEY (id)
 );
-GO
 
 -- Conferência: tabelas criadas
 SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME;

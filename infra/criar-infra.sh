@@ -25,7 +25,13 @@ set -e
 # 1) VARIÁVEIS
 # ────────────────────────────────────────────────────────────
 RM="563454"
-LOCATION="brazilsouth"
+# Regiões permitidas pela assinatura Azure for Students (política "Allowed resource
+# deployment regions"): eastus2, chilecentral, southcentralus, eastus, centralus.
+# Em 10/2026 o Azure SQL não aceitava novos servidores em chilecentral/southcentralus
+# e a cota de B1 era 0 em southcentralus, por isso SQL e App Service ficam em centralus.
+LOCATION="southcentralus"        # Resource Group e Key Vault
+SQL_LOCATION="centralus"         # Azure SQL Server + banco
+APP_LOCATION="centralus"         # App Service Plan + Web App
 RG="rg-mercadoexpress-rm$RM"
 SQL_SERVER="sql-mercadoexpress-rm$RM"
 SQL_DB="mercadoexpressdb"
@@ -79,11 +85,11 @@ ok "Resource Group criado"
 if existe az sql server show --name "$SQL_SERVER" --resource-group "$RG"; then
   warn "SQL Server $SQL_SERVER já existe - pulando"
 else
-  step "Criando Azure SQL Server $SQL_SERVER (1-3 min)"
+  step "Criando Azure SQL Server $SQL_SERVER em $SQL_LOCATION (1-3 min)"
   az sql server create \
     --name "$SQL_SERVER" \
     --resource-group "$RG" \
-    --location "$LOCATION" \
+    --location "$SQL_LOCATION" \
     --admin-user "$SQL_ADMIN" \
     --admin-password "$SQL_PASSWORD" \
     -o table
@@ -144,11 +150,11 @@ ok "Segredos db-url, db-username e db-password gravados"
 if existe az appservice plan show --name "$PLAN" --resource-group "$RG"; then
   warn "App Service Plan $PLAN já existe - pulando"
 else
-  step "Criando App Service Plan Linux $PLAN (B1)"
+  step "Criando App Service Plan Linux $PLAN (B1) em $APP_LOCATION"
   az appservice plan create \
     --name "$PLAN" \
     --resource-group "$RG" \
-    --location "$LOCATION" \
+    --location "$APP_LOCATION" \
     --is-linux \
     --sku B1 \
     -o table

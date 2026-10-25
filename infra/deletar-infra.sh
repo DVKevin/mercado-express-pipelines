@@ -4,7 +4,7 @@
 # Rodar SOMENTE depois da nota/correção (Azure Cloud Shell - Bash)
 # ============================================================
 RM="563454"
-LOCATION="brazilsouth"
+LOCATION="southcentralus"
 RG="rg-mercadoexpress-rm$RM"
 KV_NAME="kv-mercado-rm$RM"
 

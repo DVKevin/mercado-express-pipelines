@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Pedido #' + ${pedido.id})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="narrow">
+    <a th:href="@{/pedidos}" class="muted">← Meus pedidos</a>
+    <h1>Pedido #<span th:text="${pedido.id}">1</span></h1>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div class="card">
+        <p>Status: <span class="status" th:classappend="${'st-' + pedido.status}" th:text="${pedido.status}">X</span></p>
+        <p th:if="${pedido.status.name() == 'AGUARDANDO_PAGAMENTO'}" class="muted">⏳ Aguardando resposta do Banco Tranquilo...</p>
+        <p th:if="${pedido.status.name() == 'APROVADO'}">✅ Pagamento confirmado! Enviamos um e-mail para
+            <b th:text="${pedido.usuario.email}"></b>.</p>
+        <dl>
+            <dt>Cliente</dt><dd th:text="${pedido.usuario.nome}"></dd>
+            <dt>Data</dt><dd th:text="${#temporals.format(pedido.criadoEm, 'dd/MM/yyyy HH:mm:ss')}"></dd>
+            <dt>Conta</dt><dd th:text="${pedido.contaBanco}"></dd>
+            <dt>Transação</dt><dd th:text="${pedido.codigoTransacao ?: '-'}"></dd>
+            <dt>Retorno do banco</dt><dd th:text="${pedido.mensagemBanco ?: '-'}"></dd>
+        </dl>
+        <table class="table">
+            <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Subtotal</th></tr></thead>
+            <tbody>
+            <tr th:each="i : ${pedido.itens}">
+                <td th:text="${i.produto.nome}"></td>
+                <td th:text="${i.quantidade} + ' ' + ${i.produto.unidade}"></td>
+                <td th:text="'R$ ' + ${#numbers.formatDecimal(i.precoUnitario, 1, 'POINT', 2, 'COMMA')}"></td>
+                <td th:text="'R$ ' + ${#numbers.formatDecimal(i.subtotal, 1, 'POINT', 2, 'COMMA')}"></td>
+            </tr>
+            </tbody>
+        </table>
+        <h2 class="right">Total: R$ <span th:text="${#numbers.formatDecimal(pedido.valorTotal, 1, 'POINT', 2, 'COMMA')}"></span></h2>
+    </div>
+</main>
+<!-- enquanto o banco não responde, recarrega a página a cada 2s -->
+<script th:if="${pedido.status.name() == 'AGUARDANDO_PAGAMENTO'}">setTimeout(() => location.reload(), 2000);</script>
+</body>
+</html>

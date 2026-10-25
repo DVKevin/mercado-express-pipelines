@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${produto.id == null ? 'Novo produto' : 'Editar produto'})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="narrow">
+    <a th:href="@{/produtos}" class="muted">← Voltar</a>
+    <h1 th:text="${produto.id == null} ? 'Novo produto' : 'Editar produto #' + ${produto.id}">Produto</h1>
+
+    <form th:action="@{/produtos/salvar}" th:object="${produto}" method="post" class="card form" novalidate>
+        <input type="hidden" th:field="*{id}">
+        <label>Nome
+            <input type="text" th:field="*{nome}">
+            <small class="field-err" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+        </label>
+        <div class="two">
+            <label>Categoria
+                <input type="text" th:field="*{categoria}" list="categorias">
+                <datalist id="categorias"><option>Frutas</option><option>Legumes</option><option>Verduras</option><option>Bebidas</option></datalist>
+                <small class="field-err" th:if="${#fields.hasErrors('categoria')}" th:errors="*{categoria}"></small>
+            </label>
+            <label>Unidade
+                <input type="text" th:field="*{unidade}" placeholder="kg, un, bandeja">
+                <small class="field-err" th:if="${#fields.hasErrors('unidade')}" th:errors="*{unidade}"></small>
+            </label>
+        </div>
+        <label>Descrição
+            <input type="text" th:field="*{descricao}">
+        </label>
+        <label>Fornecedor
+            <select name="fornecedor.id">
+                <option value="">— sem fornecedor —</option>
+                <option th:each="f : ${fornecedores}" th:value="${f.id}" th:text="${f.nome}"
+                        th:selected="${produto.fornecedor != null and produto.fornecedor.id == f.id}">Fornecedor</option>
+            </select>
+        </label>
+        <div class="three">
+            <label>Preço de custo (R$)
+                <input type="number" step="0.01" th:field="*{precoCusto}">
+                <small class="field-err" th:if="${#fields.hasErrors('precoCusto')}" th:errors="*{precoCusto}"></small>
+            </label>
+            <label>Preço de venda (R$)
+                <input type="number" step="0.01" th:field="*{precoVenda}">
+                <small class="field-err" th:if="${#fields.hasErrors('precoVenda')}" th:errors="*{precoVenda}"></small>
+            </label>
+            <label>Estoque
+                <input type="number" th:field="*{estoque}">
+                <small class="field-err" th:if="${#fields.hasErrors('estoque')}" th:errors="*{estoque}"></small>
+            </label>
+        </div>
+        <div class="row">
+            <button type="submit" class="btn">Salvar</button>
+            <a th:href="@{/produtos}" class="btn btn-ghost">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

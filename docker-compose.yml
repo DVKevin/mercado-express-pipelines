@@ -1,0 +1,26 @@
+# Sobe a infraestrutura local: PostgreSQL + RabbitMQ (com Dashboard em http://localhost:15672, guest/guest)
+services:
+  postgres:
+    image: postgres:16
+    container_name: mercado-postgres
+    environment:
+      POSTGRES_DB: mercado_express
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-masterdev
+    ports:
+      - "5672:5672"     # AMQP (aplicações)
+      - "15672:15672"   # Dashboard / RabbitMQ Management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+volumes:
+  pgdata:

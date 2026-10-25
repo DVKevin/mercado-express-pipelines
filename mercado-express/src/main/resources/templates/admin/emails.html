@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('E-mails enviados')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main>
+    <h1>Controle de e-mails (TB_EMAIL)</h1>
+    <table class="table">
+        <thead><tr><th>#</th><th>Pedido</th><th>Para</th><th>Assunto</th><th>Data</th><th>Status</th><th>Detalhe</th></tr></thead>
+        <tbody>
+        <tr th:each="e : ${emails}">
+            <td th:text="${e.id}"></td>
+            <td><a th:href="@{/pedidos/{id}(id=${e.pedidoId})}" th:text="'#' + ${e.pedidoId}"></a></td>
+            <td th:text="${e.emailTo}"></td>
+            <td th:text="${e.subject}"></td>
+            <td th:text="${#temporals.format(e.sendDate, 'dd/MM/yyyy HH:mm:ss')}"></td>
+            <td><span class="status" th:classappend="${'em-' + e.status}" th:text="${e.status}"></span></td>
+            <td>
+                <details><summary>ver texto</summary><pre th:text="${e.text}"></pre>
+                    <p class="field-err" th:if="${e.erro}" th:text="${e.erro}"></p></details>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(emails)}"><td colspan="7" class="center muted">Nenhum e-mail enviado ainda.</td></tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

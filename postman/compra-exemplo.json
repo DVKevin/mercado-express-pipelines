@@ -1,0 +1,7 @@
+{
+  "contaBanco": "12345-6",
+  "itens": [
+    { "produtoId": 1, "quantidade": 2 },
+    { "produtoId": 3, "quantidade": 1 }
+  ]
+}

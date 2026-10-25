@@ -1,0 +1,86 @@
+{
+  "info": {
+    "name": "CP5 - Mercado Express + Banco Tranquilo",
+    "description": "Testes da API do Mercado Express. Autenticação HTTP Basic (cliente@mercado.com / cliente123). Rode o docker-compose, o banco-tranquilo-worker e o mercado-express antes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "pedidoId", "value": "" }
+  ],
+  "auth": {
+    "type": "basic",
+    "basic": [
+      { "key": "username", "value": "cliente@mercado.com", "type": "string" },
+      { "key": "password", "value": "cliente123", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Listar produtos",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/produtos" }
+    },
+    {
+      "name": "2. Compra APROVADA (abaixo do limite)",
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('202 Accepted', () => pm.response.to.have.status(202));",
+        "const body = pm.response.json();",
+        "pm.collectionVariables.set('pedidoId', body.id);",
+        "pm.test('Status inicial AGUARDANDO_PAGAMENTO', () => pm.expect(body.status).to.eql('AGUARDANDO_PAGAMENTO'));"
+      ] } }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/compras",
+        "body": { "mode": "raw", "raw": "{\n  \"contaBanco\": \"12345-6\",\n  \"itens\": [\n    { \"produtoId\": 1, \"quantidade\": 2 },\n    { \"produtoId\": 3, \"quantidade\": 1 }\n  ]\n}" }
+      }
+    },
+    {
+      "name": "3. Consultar status do pedido (esperar ~2s)",
+      "event": [{ "listen": "test", "script": { "exec": [
+        "pm.test('Pedido processado pelo banco', () => pm.expect(pm.response.json().status).to.be.oneOf(['APROVADO','RECUSADO']));"
+      ] } }],
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/compras/{{pedidoId}}" }
+    },
+    {
+      "name": "4. Compra RECUSADA (acima de R$ 500)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/compras",
+        "body": { "mode": "raw", "raw": "{\n  \"contaBanco\": \"12345-6\",\n  \"itens\": [\n    { \"produtoId\": 5, \"quantidade\": 30 },\n    { \"produtoId\": 10, \"quantidade\": 20 }\n  ]\n}" }
+      }
+    },
+    {
+      "name": "5. Compra RECUSADA (conta bloqueada)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/compras",
+        "body": { "mode": "raw", "raw": "{\n  \"contaBanco\": \"00000-0\",\n  \"itens\": [ { \"produtoId\": 2, \"quantidade\": 1 } ]\n}" }
+      }
+    },
+    {
+      "name": "6. Minhas compras",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/compras" }
+    },
+    {
+      "name": "7. Dashboard (ADMIN)",
+      "request": {
+        "auth": { "type": "basic", "basic": [
+          { "key": "username", "value": "admin@mercado.com", "type": "string" },
+          { "key": "password", "value": "admin123", "type": "string" } ] },
+        "method": "GET", "url": "{{baseUrl}}/api/dashboard"
+      }
+    },
+    {
+      "name": "8. E-mails enviados - TB_EMAIL (ADMIN)",
+      "request": {
+        "auth": { "type": "basic", "basic": [
+          { "key": "username", "value": "admin@mercado.com", "type": "string" },
+          { "key": "password", "value": "admin123", "type": "string" } ] },
+        "method": "GET", "url": "{{baseUrl}}/api/emails"
+      }
+    }
+  ]
+}

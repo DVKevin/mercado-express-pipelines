@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${fornecedor.id == null ? 'Novo fornecedor' : 'Editar fornecedor'})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="narrow">
+    <a th:href="@{/fornecedores}" class="muted">← Voltar</a>
+    <h1 th:text="${fornecedor.id == null} ? 'Novo fornecedor' : 'Editar fornecedor #' + ${fornecedor.id}">Fornecedor</h1>
+
+    <form th:action="@{/fornecedores/salvar}" th:object="${fornecedor}" method="post" class="card form" novalidate>
+        <input type="hidden" th:field="*{id}">
+        <label>Nome
+            <input type="text" th:field="*{nome}">
+            <small class="field-err" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+        </label>
+        <div class="two">
+            <label>CNPJ (somente números)
+                <input type="text" th:field="*{cnpj}" maxlength="14" placeholder="00000000000000">
+                <small class="field-err" th:if="${#fields.hasErrors('cnpj')}" th:errors="*{cnpj}"></small>
+            </label>
+            <label>Cidade
+                <input type="text" th:field="*{cidade}">
+                <small class="field-err" th:if="${#fields.hasErrors('cidade')}" th:errors="*{cidade}"></small>
+            </label>
+        </div>
+        <div class="two">
+            <label>E-mail
+                <input type="email" th:field="*{email}">
+                <small class="field-err" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+            </label>
+            <label>Telefone
+                <input type="text" th:field="*{telefone}" placeholder="(11) 99999-9999">
+                <small class="field-err" th:if="${#fields.hasErrors('telefone')}" th:errors="*{telefone}"></small>
+            </label>
+        </div>
+        <div class="row">
+            <button type="submit" class="btn">Salvar</button>
+            <a th:href="@{/fornecedores}" class="btn btn-ghost">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

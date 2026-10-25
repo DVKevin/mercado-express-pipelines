@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Carrinho')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main>
+    <h1>🛒 Carrinho</h1>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <div th:if="${#lists.isEmpty(linhas)}" class="card center">
+        <p class="muted">Seu carrinho está vazio.</p>
+        <a th:href="@{/produtos}" class="btn">Ver produtos</a>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(linhas)}" class="cart">
+        <table class="table">
+            <thead><tr><th>Produto</th><th>Preço</th><th>Quantidade</th><th>Subtotal</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="l : ${linhas}">
+                <td th:text="${l.produto.nome}">Banana</td>
+                <td th:text="'R$ ' + ${#numbers.formatDecimal(l.produto.precoVenda, 1, 'POINT', 2, 'COMMA')}"></td>
+                <td>
+                    <form th:action="@{/carrinho/atualizar}" method="post" class="inline">
+                        <input type="hidden" name="produtoId" th:value="${l.produto.id}">
+                        <input type="number" name="quantidade" th:value="${l.quantidade}" min="0" th:max="${l.produto.estoque}" class="qty">
+                        <button type="submit" class="btn btn-sm btn-ghost">Atualizar</button>
+                    </form>
+                </td>
+                <td th:text="'R$ ' + ${#numbers.formatDecimal(l.subtotal, 1, 'POINT', 2, 'COMMA')}"></td>
+                <td>
+                    <form th:action="@{/carrinho/remover}" method="post" class="inline">
+                        <input type="hidden" name="produtoId" th:value="${l.produto.id}">
+                        <button type="submit" class="btn btn-sm btn-danger">Remover</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="card checkout">
+            <h2>Total: R$ <span th:text="${#numbers.formatDecimal(total, 1, 'POINT', 2, 'COMMA')}">0,00</span></h2>
+            <form th:action="@{/carrinho/finalizar}" method="post">
+                <label>Conta no Banco Tranquilo
+                    <input type="text" name="contaBanco" required placeholder="12345-6">
+                </label>
+                <p class="muted small">Simulação: compras acima de R$ 500,00 são recusadas (limite) e a conta
+                    <code>00000-0</code> está bloqueada.</p>
+                <button type="submit" class="btn btn-block btn-lg">Finalizar compra e pagar</button>
+            </form>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

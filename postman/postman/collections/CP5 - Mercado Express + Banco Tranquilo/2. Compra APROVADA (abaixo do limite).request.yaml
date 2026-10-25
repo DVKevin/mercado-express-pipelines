@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/api/compras"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "contaBanco": "12345-6",
+      "itens": [
+        { "produtoId": 1, "quantidade": 2 },
+        { "produtoId": 3, "quantidade": 1 }
+      ]
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('202 Accepted', () => pm.response.to.have.status(202));
+      const body = pm.response.json();
+      pm.collectionVariables.set('pedidoId', body.id);
+      pm.test('Status inicial AGUARDANDO_PAGAMENTO', () => pm.expect(body.status).to.eql('AGUARDANDO_PAGAMENTO'));
+    language: text/javascript
+examples: .resources/2. Compra APROVADA (abaixo do limite).resources/examples
+order: 2000

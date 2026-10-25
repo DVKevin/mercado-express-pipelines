@@ -1,0 +1,24 @@
+$kind: collection
+description: Testes da API do Mercado Express. Autenticação HTTP Basic (cliente@mercado.com / {{auth_password_0lq8}}). Rode o docker-compose, o banco-tranquilo-worker e o mercado-express antes.
+variables:
+  - key: baseUrl
+    value: http://localhost:8080
+    disabled: false
+    secret: false
+  - key: pedidoId
+    value: ""
+    disabled: false
+    secret: false
+  - key: auth_password_1dkw
+    secret: true
+    disabled: false
+  - key: auth_password_0lq8
+    secret: true
+    disabled: false
+auth:
+  - id: 55356a1b-1f04-43ef-808b-1ac7451759cd
+    type: basic
+    name: basic auth
+    credentials:
+      username: cliente@mercado.com
+      password: "{{auth_password_0lq8}}"

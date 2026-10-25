@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{baseUrl}}/api/compras"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "contaBanco": "00000-0",
+      "itens": [ { "produtoId": 2, "quantidade": 1 } ]
+    }
+order: 5000

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Produtos')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main>
+    <div class="page-head">
+        <h1>Produtos</h1>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/produtos/novo}" class="btn">+ Novo produto</a>
+    </div>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <form th:action="@{/produtos}" method="get" class="search">
+        <input type="text" name="busca" th:value="${busca}" placeholder="Buscar produto pelo nome...">
+        <button class="btn" type="submit">Buscar</button>
+        <a th:if="${busca}" th:href="@{/produtos}" class="btn btn-ghost">Limpar</a>
+    </form>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>#</th><th>Produto</th><th>Categoria</th><th>Fornecedor</th>
+            <th sec:authorize="hasRole('ADMIN')">Custo</th>
+            <th>Preço</th><th>Estoque</th><th class="right">Ações</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="p : ${produtos}">
+            <td th:text="${p.id}">1</td>
+            <td><a th:href="@{/produtos/{id}(id=${p.id})}" th:text="${p.nome}">Banana</a></td>
+            <td th:text="${p.categoria}">Frutas</td>
+            <td th:text="${p.fornecedor != null} ? ${p.fornecedor.nome} : '—'">Fornecedor</td>
+            <td sec:authorize="hasRole('ADMIN')" th:text="'R$ ' + ${#numbers.formatDecimal(p.precoCusto, 1, 'POINT', 2, 'COMMA')}">R$ 1,00</td>
+            <td th:text="'R$ ' + ${#numbers.formatDecimal(p.precoVenda, 1, 'POINT', 2, 'COMMA')} + ' / ' + ${p.unidade}">R$ 2,00</td>
+            <td><span th:classappend="${p.estoque < 20} ? 'low'" th:text="${p.estoque}">10</span></td>
+            <td class="right actions">
+                <a th:href="@{/produtos/{id}(id=${p.id})}" class="btn btn-sm btn-ghost">Ver</a>
+                <form th:action="@{/carrinho/adicionar}" method="post" class="inline" th:if="${p.estoque > 0}">
+                    <input type="hidden" name="produtoId" th:value="${p.id}">
+                    <input type="number" name="quantidade" value="1" min="1" th:max="${p.estoque}" class="qty">
+                    <button type="submit" class="btn btn-sm">🛒 Adicionar</button>
+                </form>
+                <span th:if="${p.estoque == 0}" class="muted">Esgotado</span>
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/produtos/{id}/editar(id=${p.id})}" class="btn btn-sm btn-outline">Editar</a>
+                <form sec:authorize="hasRole('ADMIN')" th:action="@{/produtos/{id}/excluir(id=${p.id})}" method="post"
+                      class="inline" onsubmit="return confirm('Excluir este produto?')">
+                    <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(produtos)}"><td colspan="8" class="center muted">Nenhum produto encontrado.</td></tr>
+        </tbody>
+    </table>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

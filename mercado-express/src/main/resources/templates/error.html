@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><title>Erro | Mercado Express</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<main class="center-box">
+    <h1>Ops! <span th:text="${status}">500</span></h1>
+    <p class="muted" th:text="${error}">Algo deu errado.</p>
+    <a th:href="@{/}" class="btn">Voltar ao início</a>
+</main>
+</body>
+</html>

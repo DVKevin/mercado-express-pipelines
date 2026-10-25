@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{baseUrl}}/api/emails"
+method: GET
+auth:
+  type: basic
+  credentials:
+    username: admin@mercado.com
+    password: "{{auth_password_1dkw}}"
+order: 8000

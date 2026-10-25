@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Cadastro')}"></head>
+<body class="auth-bg">
+<main class="auth">
+    <div class="auth-card">
+        <a th:href="@{/}" class="brand">🍌 Mercado <span>Express</span></a>
+        <h1>Criar conta</h1>
+        <div class="alert alert-warn" th:if="${param.naoEncontrado}">
+            Não encontramos uma conta com esse e-mail. Cadastre-se para continuar!
+        </div>
+
+        <form th:action="@{/cadastro}" th:object="${form}" method="post" novalidate>
+            <label>Nome
+                <input type="text" th:field="*{nome}" required>
+                <small class="field-err" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+            </label>
+            <label>E-mail
+                <input type="email" th:field="*{email}" required>
+                <small class="field-err" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></small>
+            </label>
+            <label>Senha
+                <input type="password" th:field="*{senha}" required>
+                <small class="field-err" th:if="${#fields.hasErrors('senha')}" th:errors="*{senha}"></small>
+            </label>
+            <label>Confirmar senha
+                <input type="password" th:field="*{confirmacaoSenha}" required>
+                <small class="field-err" th:if="${#fields.hasErrors('confirmacaoSenha')}" th:errors="*{confirmacaoSenha}"></small>
+            </label>
+            <button type="submit" class="btn btn-block">Cadastrar</button>
+        </form>
+        <p class="muted center">Já tem conta? <a th:href="@{/login}">Entrar</a></p>
+    </div>
+</main>
+</body>
+</html>

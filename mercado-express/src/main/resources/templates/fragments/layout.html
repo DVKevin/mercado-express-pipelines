@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' | Mercado Express'">Mercado Express</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header th:fragment="navbar" class="navbar">
+    <a th:href="@{/}" class="brand">🍌 Mercado <span>Express</span></a>
+    <nav>
+        <a sec:authorize="isAuthenticated()" th:href="@{/produtos}">Produtos</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/carrinho}">
+            Carrinho <span class="badge" th:if="${qtdCarrinho != null and qtdCarrinho > 0}" th:text="${qtdCarrinho}">0</span>
+        </a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/pedidos}">Meus pedidos</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/fornecedores}">Fornecedores</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/dashboard}">Dashboard</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/pedidos}">Todos os pedidos</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/emails}">E-mails</a>
+        <span sec:authorize="isAuthenticated()" class="user">
+            <span sec:authentication="name">usuario</span>
+            <small sec:authorize="hasRole('ADMIN')" class="tag tag-admin">ADMIN</small>
+            <small sec:authorize="hasRole('CLIENTE')" class="tag">CLIENTE</small>
+        </span>
+        <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="inline">
+            <button type="submit" class="btn btn-ghost">Sair</button>
+        </form>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn">Entrar</a>
+        <a sec:authorize="!isAuthenticated()" th:href="@{/cadastro}" class="btn btn-outline">Cadastrar</a>
+    </nav>
+</header>
+
+<div th:fragment="flash">
+    <div class="alert alert-ok" th:if="${sucesso}" th:text="${sucesso}"></div>
+    <div class="alert alert-err" th:if="${erro}" th:text="${erro}"></div>
+</div>
+
+<footer th:fragment="footer" class="footer">
+    Mercado Express · 3º Checkpoint DevOps (Azure Pipelines CI/CD) · FIAP
+</footer>
+</body>
+</html>

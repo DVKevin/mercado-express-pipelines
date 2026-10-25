@@ -1,0 +1,8 @@
+3º Checkpoint 2º Semestre - Pipelines CI/CD
+DevOps Tools & Cloud Computing - Prof. João Menk
+
+Integrantes:
+- Artur Pioli Silva - RM 565597
+- Kevin Martins Campos - RM 563454
+- Matheus Arazin de Oliveira - RM 556649
+- Pedro Gabriel Claes - RM 566058

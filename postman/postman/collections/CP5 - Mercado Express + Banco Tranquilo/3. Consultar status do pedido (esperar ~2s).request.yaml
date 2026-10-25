@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{baseUrl}}/api/compras/{{pedidoId}}"
+method: GET
+scripts:
+  - type: afterResponse
+    code: pm.test('Pedido processado pelo banco', () => pm.expect(pm.response.json().status).to.be.oneOf(['APROVADO','RECUSADO']));
+    language: text/javascript
+order: 3000

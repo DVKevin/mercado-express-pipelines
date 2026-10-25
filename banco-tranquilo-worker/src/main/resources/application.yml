@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: banco-tranquilo-worker
+  main:
+    web-application-type: none   # worker: só consome/produz mensagens, sem servidor HTTP
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USERNAME:guest}
+    password: ${RABBIT_PASSWORD:guest}
+    virtual-host: ${RABBIT_VHOST:/}
+    listener:
+      simple:
+        default-requeue-rejected: false
+
+banco:
+  limite-por-compra: 500.00        # acima disso: recusado por limite
+  contas-bloqueadas: 00000-0       # lista separada por vírgula
+  tempo-processamento-ms: 1500     # simula o tempo de resposta do banco
+
+app:
+  rabbit:
+    request-exchange: pagamento-request-exchange
+    request-queue: pagamento-request-queue
+    request-routing-key: pagamento-request-rout-key
+    sucesso-exchange: pagamento-response-sucesso-exchange
+    sucesso-queue: pagamento-response-sucesso-queue
+    sucesso-routing-key: pagamento-response-sucesso-rout-key
+    erro-exchange: pagamento-response-erro-exchange
+    erro-queue: pagamento-response-erro-queue
+    erro-routing-key: pagamento-response-erro-rout-key

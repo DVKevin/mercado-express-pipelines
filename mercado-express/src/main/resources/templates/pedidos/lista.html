@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Meus pedidos')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main>
+    <h1>Meus pedidos</h1>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+    <table class="table">
+        <thead><tr><th>#</th><th>Data</th><th>Itens</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="p : ${pedidos}">
+            <td th:text="${p.id}">1</td>
+            <td th:text="${#temporals.format(p.criadoEm, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${#lists.size(p.itens)}">1</td>
+            <td th:text="'R$ ' + ${#numbers.formatDecimal(p.valorTotal, 1, 'POINT', 2, 'COMMA')}"></td>
+            <td><span class="status" th:classappend="${'st-' + p.status}" th:text="${p.status}">APROVADO</span></td>
+            <td><a th:href="@{/pedidos/{id}(id=${p.id})}" class="btn btn-sm btn-ghost">Detalhes</a></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(pedidos)}"><td colspan="6" class="center muted">Nenhum pedido ainda.</td></tr>
+        </tbody>
+    </table>
+</main>
+</body>
+</html>

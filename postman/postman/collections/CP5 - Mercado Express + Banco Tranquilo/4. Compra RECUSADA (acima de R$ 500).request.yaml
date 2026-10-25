@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/api/compras"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "contaBanco": "12345-6",
+      "itens": [
+        { "produtoId": 5, "quantidade": 30 },
+        { "produtoId": 10, "quantidade": 20 }
+      ]
+    }
+examples: .resources/4. Compra RECUSADA (acima de R$ 500).resources/examples
+order: 4000

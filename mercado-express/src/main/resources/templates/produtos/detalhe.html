@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head(${produto.nome})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main class="narrow">
+    <a th:href="@{/produtos}" class="muted">← Voltar</a>
+    <div class="card detail">
+        <span class="cat" th:text="${produto.categoria}">Frutas</span>
+        <h1 th:text="${produto.nome}">Produto</h1>
+        <p class="muted" th:text="${produto.descricao}">descrição</p>
+        <dl>
+            <dt>Código</dt><dd th:text="${produto.id}">1</dd>
+            <dt>Preço</dt><dd th:text="'R$ ' + ${#numbers.formatDecimal(produto.precoVenda, 1, 'POINT', 2, 'COMMA')} + ' / ' + ${produto.unidade}"></dd>
+            <dt sec:authorize="hasRole('ADMIN')">Custo</dt>
+            <dd sec:authorize="hasRole('ADMIN')" th:text="'R$ ' + ${#numbers.formatDecimal(produto.precoCusto, 1, 'POINT', 2, 'COMMA')}"></dd>
+            <dt>Estoque</dt><dd th:text="${produto.estoque}">10</dd>
+            <dt>Fornecedor</dt><dd th:text="${produto.fornecedor != null} ? ${produto.fornecedor.nome} : '—'">Fornecedor</dd>
+        </dl>
+        <div class="row">
+            <form th:action="@{/carrinho/adicionar}" method="post" class="inline" th:if="${produto.estoque > 0}">
+                <input type="hidden" name="produtoId" th:value="${produto.id}">
+                <input type="number" name="quantidade" value="1" min="1" th:max="${produto.estoque}" class="qty">
+                <button type="submit" class="btn">🛒 Adicionar ao carrinho</button>
+            </form>
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/produtos/{id}/editar(id=${produto.id})}" class="btn btn-outline">Editar</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

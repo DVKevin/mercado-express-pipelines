@@ -1,0 +1,11 @@
+# Use this workspace to collaborate
+workspace:
+  id: f92cce0e-8a1a-4a54-8126-e81fadac4d2b
+
+localResources:
+  collections:
+    - ../CP5-Mercado-Express.postman_collection.json
+
+cloudResources:
+  collections:
+    ../postman/collections/CP5 - Mercado Express + Banco Tranquilo: 50a517bb-2549-404f-aa0f-b2593e361845

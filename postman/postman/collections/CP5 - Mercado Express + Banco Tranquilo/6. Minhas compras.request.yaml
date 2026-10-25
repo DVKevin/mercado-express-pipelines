@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{baseUrl}}/api/compras"
+method: GET
+order: 6000

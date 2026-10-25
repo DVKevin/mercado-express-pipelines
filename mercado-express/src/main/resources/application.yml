@@ -1,0 +1,61 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: mercado-express
+  config:
+    import: optional:classpath:mail.properties
+  # Banco de dados:
+  #  - Local  -> PostgreSQL do docker-compose (valores padrão abaixo)
+  #  - Nuvem  -> Azure SQL Database. DB_URL, DB_USERNAME e DB_PASSWORD vêm do Azure Key Vault
+  #             (Key Vault References configuradas no App Service pelo script infra/criar-infra.sh)
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/mercado_express}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  thymeleaf:
+    cache: false
+  rabbitmq:
+    host: ${RABBIT_HOST:localhost}
+    port: ${RABBIT_PORT:5672}
+    username: ${RABBIT_USERNAME:guest}
+    password: ${RABBIT_PASSWORD:guest}
+    virtual-host: ${RABBIT_VHOST:/}
+    listener:
+      simple:
+        # No deploy da Parte 1 (sem RabbitMQ) defina RABBIT_LISTENERS=false
+        auto-startup: ${RABBIT_LISTENERS:true}
+        default-requeue-rejected: false  # mensagem com erro não fica em loop infinito
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}   # Senha de App do Gmail (aula 16)
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+app:
+  rabbit:
+    request-exchange: pagamento-request-exchange
+    request-queue: pagamento-request-queue
+    request-routing-key: pagamento-request-rout-key
+    sucesso-exchange: pagamento-response-sucesso-exchange
+    sucesso-queue: pagamento-response-sucesso-queue
+    sucesso-routing-key: pagamento-response-sucesso-rout-key
+    erro-exchange: pagamento-response-erro-exchange
+    erro-queue: pagamento-response-erro-queue
+    erro-routing-key: pagamento-response-erro-rout-key
+

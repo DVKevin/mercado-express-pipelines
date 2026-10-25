@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Início')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main>
+    <section class="hero">
+        <div>
+            <h1>Frutas fresquinhas,<br>direto do hortifrúti para você.</h1>
+            <p>O Mercado Express entrega frutas, verduras e sucos com pagamento seguro pelo <strong>Banco Tranquilo</strong>.</p>
+            <div class="row">
+                <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn btn-lg">Entrar</a>
+                <a sec:authorize="!isAuthenticated()" th:href="@{/cadastro}" class="btn btn-lg btn-outline">Criar conta</a>
+                <a sec:authorize="isAuthenticated()" th:href="@{/produtos}" class="btn btn-lg">Ver produtos</a>
+            </div>
+        </div>
+        <div class="hero-emoji">🍓🍍<br>🍇🍊</div>
+    </section>
+
+    <h2>Destaques</h2>
+    <div class="grid">
+        <div class="card" th:each="p : ${destaques}">
+            <span class="cat" th:text="${p.categoria}">Frutas</span>
+            <h3 th:text="${p.nome}">Produto</h3>
+            <p class="muted" th:text="${p.descricao}">descrição</p>
+            <p class="price">R$ <span th:text="${#numbers.formatDecimal(p.precoVenda, 1, 'POINT', 2, 'COMMA')}">0,00</span>
+                <small th:text="'/' + ${p.unidade}">/kg</small></p>
+        </div>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

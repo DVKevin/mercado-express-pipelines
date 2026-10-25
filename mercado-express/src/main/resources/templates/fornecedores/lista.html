@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Fornecedores')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main>
+    <div class="page-head">
+        <h1>Fornecedores</h1>
+        <a th:href="@{/fornecedores/novo}" class="btn">+ Novo fornecedor</a>
+    </div>
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th>#</th><th>Fornecedor</th><th>CNPJ</th><th>E-mail</th><th>Telefone</th><th>Cidade</th>
+            <th class="right">Ações</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="f : ${fornecedores}">
+            <td th:text="${f.id}">1</td>
+            <td th:text="${f.nome}">Fornecedor</td>
+            <td th:text="${f.cnpj}">00000000000000</td>
+            <td th:text="${f.email}">email</td>
+            <td th:text="${f.telefone}">telefone</td>
+            <td th:text="${f.cidade}">cidade</td>
+            <td class="right actions">
+                <a th:href="@{/fornecedores/{id}/editar(id=${f.id})}" class="btn btn-sm btn-outline">Editar</a>
+                <form th:action="@{/fornecedores/{id}/excluir(id=${f.id})}" method="post"
+                      class="inline" onsubmit="return confirm('Excluir este fornecedor?')">
+                    <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                </form>
+            </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(fornecedores)}"><td colspan="7" class="center muted">Nenhum fornecedor cadastrado.</td></tr>
+        </tbody>
+    </table>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

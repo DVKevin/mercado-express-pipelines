@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: navbar}"></header>
+<main>
+    <div class="page-head">
+        <h1>Dashboard da gerência</h1>
+        <a th:href="@{/produtos/novo}" class="btn">+ Novo produto</a>
+    </div>
+
+    <div class="kpis">
+        <div class="kpi"><span>Faturamento</span><b th:text="'R$ ' + ${#numbers.formatDecimal(r.faturamento, 1, 'POINT', 2, 'COMMA')}"></b></div>
+        <div class="kpi"><span>Lucro bruto</span><b th:text="'R$ ' + ${#numbers.formatDecimal(r.lucro, 1, 'POINT', 2, 'COMMA')}"></b></div>
+        <div class="kpi"><span>Pedidos aprovados</span><b th:text="${r.pedidosAprovados}"></b></div>
+        <div class="kpi"><span>Ticket médio</span><b th:text="'R$ ' + ${#numbers.formatDecimal(r.ticketMedio, 1, 'POINT', 2, 'COMMA')}"></b></div>
+        <div class="kpi"><span>Recusados / aguardando</span><b th:text="${r.pedidosRecusados} + ' / ' + ${r.pedidosAguardando}"></b></div>
+        <div class="kpi"><span>Itens em estoque</span><b th:text="${r.itensEmEstoque}"></b>
+            <small th:text="${r.produtosEstoqueBaixo} + ' produto(s) com estoque baixo'"></small></div>
+    </div>
+
+    <div class="charts">
+        <div class="card chart wide"><h3>Vendas e lucro por dia (14 dias)</h3><canvas id="chVendas"></canvas></div>
+        <div class="card chart"><h3>Receita e lucro por produto</h3><canvas id="chProdutos"></canvas></div>
+        <div class="card chart"><h3>Estoque atual</h3><canvas id="chEstoque"></canvas></div>
+        <div class="card chart"><h3>Pedidos por status</h3><canvas id="chStatus"></canvas></div>
+    </div>
+
+    <h2>Últimas compras</h2>
+    <table class="table">
+        <thead><tr><th>#</th><th>Data</th><th>Cliente</th><th>Total</th><th>Lucro</th><th>Status</th></tr></thead>
+        <tbody>
+        <tr th:each="p : ${ultimosPedidos}">
+            <td><a th:href="@{/pedidos/{id}(id=${p.id})}" th:text="${p.id}"></a></td>
+            <td th:text="${#temporals.format(p.criadoEm, 'dd/MM/yyyy HH:mm')}"></td>
+            <td th:text="${p.usuario.nome}"></td>
+            <td th:text="'R$ ' + ${#numbers.formatDecimal(p.valorTotal, 1, 'POINT', 2, 'COMMA')}"></td>
+            <td th:text="'R$ ' + ${#numbers.formatDecimal(p.lucro, 1, 'POINT', 2, 'COMMA')}"></td>
+            <td><span class="status" th:classappend="${'st-' + p.status}" th:text="${p.status}"></span></td>
+        </tr>
+        </tbody>
+    </table>
+    <p><a th:href="@{/admin/pedidos}">Ver todos os pedidos →</a></p>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script th:inline="javascript">
+    const dados = {
+        dias: /*[[${r.diasLabels}]]*/ [],
+        vendasDia: /*[[${r.vendasPorDia}]]*/ [],
+        lucroDia: /*[[${r.lucroPorDia}]]*/ [],
+        produtos: /*[[${r.produtosLabels}]]*/ [],
+        receitaProd: /*[[${r.receitaPorProduto}]]*/ [],
+        lucroProd: /*[[${r.lucroPorProduto}]]*/ [],
+        estoqueLabels: /*[[${r.estoqueLabels}]]*/ [],
+        estoque: /*[[${r.estoqueValores}]]*/ [],
+        status: /*[[${r.statusLabels}]]*/ [],
+        statusQtd: /*[[${r.statusValores}]]*/ []
+    };
+    const verde = '#2f9e44', laranja = '#f08c00', vermelho = '#e03131', azul = '#1971c2', cinza = '#868e96';
+    const brl = v => 'R$ ' + Number(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+    new Chart(document.getElementById('chVendas'), {
+        type: 'line',
+        data: { labels: dados.dias, datasets: [
+            { label: 'Vendas', data: dados.vendasDia, borderColor: verde, backgroundColor: verde + '33', fill: true, tension: .3 },
+            { label: 'Lucro', data: dados.lucroDia, borderColor: laranja, tension: .3 } ] },
+        options: { plugins: { tooltip: { callbacks: { label: c => c.dataset.label + ': ' + brl(c.raw) } } } }
+    });
+    new Chart(document.getElementById('chProdutos'), {
+        type: 'bar',
+        data: { labels: dados.produtos, datasets: [
+            { label: 'Receita', data: dados.receitaProd, backgroundColor: verde },
+            { label: 'Lucro', data: dados.lucroProd, backgroundColor: laranja } ] },
+        options: { indexAxis: 'y' }
+    });
+    new Chart(document.getElementById('chEstoque'), {
+        type: 'bar',
+        data: { labels: dados.estoqueLabels, datasets: [{ label: 'Estoque',
+            data: dados.estoque, backgroundColor: dados.estoque.map(v => v < 20 ? vermelho : azul) }] },
+        options: { plugins: { legend: { display: false } } }
+    });
+    new Chart(document.getElementById('chStatus'), {
+        type: 'doughnut',
+        data: { labels: dados.status, datasets: [{ data: dados.statusQtd,
+            backgroundColor: [laranja, verde, vermelho, cinza] }] }
+    });
+</script>
+</body>
+</html>

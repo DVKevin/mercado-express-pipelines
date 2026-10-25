@@ -3,7 +3,8 @@
 # Mercado Express - 3º Checkpoint DevOps (Pipelines CI/CD)
 # Script de infraestrutura - Azure CLI (rodar no Azure Cloud Shell - Bash)
 # ------------------------------------------------------------
-# Cria, em sequência:
+# Cria, em sequência (pode ser executado de novo: pula o que já existe):
+#   0) Registro dos provedores Microsoft.Sql, Microsoft.KeyVault e Microsoft.Web
 #   1) Resource Group
 #   2) Azure SQL Server + Banco (PaaS) + regra de firewall p/ serviços Azure
 #   3) Azure Key Vault + segredos (URL, usuário e senha do banco)
@@ -48,8 +49,22 @@ fi
 
 DB_URL="jdbc:sqlserver://${SQL_SERVER}.database.windows.net:1433;database=${SQL_DB};encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;"
 
+existe() { "$@" --output none 2>/dev/null; }
+
 step "Assinatura ativa"
 az account show --query "{assinatura:name, id:id}" -o table
+
+# ────────────────────────────────────────────────────────────
+# 1.1) PROVEDORES DE RECURSOS (assinaturas novas vêm sem registro)
+# ────────────────────────────────────────────────────────────
+for NS in Microsoft.Sql Microsoft.KeyVault Microsoft.Web; do
+  STATE=$(az provider show --namespace "$NS" --query registrationState -o tsv 2>/dev/null)
+  if [ "$STATE" != "Registered" ]; then
+    step "Registrando provedor $NS (pode levar 1-3 min)"
+    az provider register --namespace "$NS" --wait
+  fi
+  ok "Provedor $NS registrado"
+done
 
 # ────────────────────────────────────────────────────────────
 # 2) RESOURCE GROUP
@@ -61,15 +76,19 @@ ok "Resource Group criado"
 # ────────────────────────────────────────────────────────────
 # 3) AZURE SQL (PaaS)
 # ────────────────────────────────────────────────────────────
-step "Criando Azure SQL Server $SQL_SERVER (1-3 min)"
-az sql server create \
-  --name "$SQL_SERVER" \
-  --resource-group "$RG" \
-  --location "$LOCATION" \
-  --admin-user "$SQL_ADMIN" \
-  --admin-password "$SQL_PASSWORD" \
-  -o table
-ok "SQL Server criado"
+if existe az sql server show --name "$SQL_SERVER" --resource-group "$RG"; then
+  warn "SQL Server $SQL_SERVER já existe - pulando"
+else
+  step "Criando Azure SQL Server $SQL_SERVER (1-3 min)"
+  az sql server create \
+    --name "$SQL_SERVER" \
+    --resource-group "$RG" \
+    --location "$LOCATION" \
+    --admin-user "$SQL_ADMIN" \
+    --admin-password "$SQL_PASSWORD" \
+    -o table
+  ok "SQL Server criado"
+fi
 
 step "Liberando acesso dos serviços Azure (App Service) ao SQL Server"
 az sql server firewall-rule create \
@@ -81,28 +100,37 @@ az sql server firewall-rule create \
   -o table
 ok "Firewall configurado"
 
-step "Criando banco $SQL_DB (camada Basic)"
-az sql db create \
-  --resource-group "$RG" \
-  --server "$SQL_SERVER" \
-  --name "$SQL_DB" \
-  --edition Basic \
-  --capacity 5 \
-  --max-size 2GB \
-  -o table
-ok "Banco criado"
+if existe az sql db show --name "$SQL_DB" --server "$SQL_SERVER" --resource-group "$RG"; then
+  warn "Banco $SQL_DB já existe - pulando"
+else
+  step "Criando banco $SQL_DB (camada Basic)"
+  az sql db create \
+    --resource-group "$RG" \
+    --server "$SQL_SERVER" \
+    --name "$SQL_DB" \
+    --edition Basic \
+    --capacity 5 \
+    --max-size 2GB \
+    --backup-storage-redundancy Geo \
+    -o table
+  ok "Banco criado"
+fi
 
 # ────────────────────────────────────────────────────────────
 # 4) KEY VAULT (dados sensíveis)
 # ────────────────────────────────────────────────────────────
-step "Criando Key Vault $KV_NAME"
-az keyvault create \
-  --name "$KV_NAME" \
-  --resource-group "$RG" \
-  --location "$LOCATION" \
-  --enable-rbac-authorization false \
-  -o table
-ok "Key Vault criado"
+if existe az keyvault show --name "$KV_NAME" --resource-group "$RG"; then
+  warn "Key Vault $KV_NAME já existe - pulando"
+else
+  step "Criando Key Vault $KV_NAME"
+  az keyvault create \
+    --name "$KV_NAME" \
+    --resource-group "$RG" \
+    --location "$LOCATION" \
+    --enable-rbac-authorization false \
+    -o table
+  ok "Key Vault criado"
+fi
 
 step "Gravando segredos do banco no Key Vault"
 az keyvault secret set --vault-name "$KV_NAME" --name "db-url"      --value "$DB_URL"       --output none
@@ -113,24 +141,32 @@ ok "Segredos db-url, db-username e db-password gravados"
 # ────────────────────────────────────────────────────────────
 # 5) APP SERVICE (Web App Java 17)
 # ────────────────────────────────────────────────────────────
-step "Criando App Service Plan Linux $PLAN (B1)"
-az appservice plan create \
-  --name "$PLAN" \
-  --resource-group "$RG" \
-  --location "$LOCATION" \
-  --is-linux \
-  --sku B1 \
-  -o table
-ok "App Service Plan criado"
+if existe az appservice plan show --name "$PLAN" --resource-group "$RG"; then
+  warn "App Service Plan $PLAN já existe - pulando"
+else
+  step "Criando App Service Plan Linux $PLAN (B1)"
+  az appservice plan create \
+    --name "$PLAN" \
+    --resource-group "$RG" \
+    --location "$LOCATION" \
+    --is-linux \
+    --sku B1 \
+    -o table
+  ok "App Service Plan criado"
+fi
 
-step "Criando Web App $WEBAPP (runtime $RUNTIME)"
-az webapp create \
-  --name "$WEBAPP" \
-  --resource-group "$RG" \
-  --plan "$PLAN" \
-  --runtime "$RUNTIME" \
-  -o table
-ok "Web App criado"
+if existe az webapp show --name "$WEBAPP" --resource-group "$RG"; then
+  warn "Web App $WEBAPP já existe - pulando"
+else
+  step "Criando Web App $WEBAPP (runtime $RUNTIME)"
+  az webapp create \
+    --name "$WEBAPP" \
+    --resource-group "$RG" \
+    --plan "$PLAN" \
+    --runtime "$RUNTIME" \
+    -o table
+  ok "Web App criado"
+fi
 
 # ────────────────────────────────────────────────────────────
 # 6) IDENTIDADE GERENCIADA + PERMISSÃO NO KEY VAULT

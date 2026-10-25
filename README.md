@@ -1,46 +1,41 @@
 # 🍌 Mercado Express — Azure Pipelines CI/CD
 
-**3º Checkpoint · 2º Semestre · DevOps Tools & Cloud Computing (FIAP · Prof. João Menk)**
+**Grupo Doletas · 3º Checkpoint · 2º Semestre · DevOps Tools & Cloud Computing (FIAP · Prof. João Menk)**
 
 Migração do App **Mercado Express** (Java 17 · Spring Boot 3 · Spring MVC + Thymeleaf + Spring Security)
 para o **Azure DevOps**, com Pipeline de **Build (CI)** com testes JUnit e Pipeline de **Release (CD)**
 entregando no **Azure App Service**, usando **Azure SQL Database (PaaS)** e **Azure Key Vault**.
 
-| Integrante | RM |
-|---|---|
-| Artur Pioli Silva | 565597 |
-| Kevin Martins Campos | 563454 |
+| Integrante                 | RM     |
+| -------------------------- | ------ |
+| Artur Pioli Silva          | 565597 |
+| Kevin Martins Campos       | 563454 |
 | Matheus Arazin de Oliveira | 556649 |
-| Pedro Gabriel Claes | 566058 |
+| Pedro Gabriel Claes        | 566058 |
 
 ---
 
 ## Arquitetura
 
-```mermaid
-flowchart LR
-    DEV[Dev - Branch da Task] -->|Pull Request + aprovação| MAIN[Azure Repos - main]
-    MAIN -->|trigger CI| CI[Pipeline de Build<br/>Maven + JUnit]
-    CI -->|artefato app.jar| CD[Pipeline de Release<br/>Azure App Service deploy]
-    CD --> APP[Azure App Service<br/>Linux · Java 17]
-    APP -->|Key Vault References| KV[(Azure Key Vault)]
-    APP -->|JDBC| SQL[(Azure SQL Database)]
-    USER[Usuário final] -->|HTTPS| APP
-```
+![Arquitetura do Mercado Express na Microsoft Azure](docs/img/arquitetura-mercado-express.png)
+
+- **Fluxo da aplicação:** Usuário → HTTPS → Web App (Java 17) → JDBC/TLS → Azure SQL Database. As credenciais do banco são lidas do Azure Key Vault (Key Vault References + identidade gerenciada).
+- **Implantação (DevOps):** Task no Boards → branch e Pull Request no Repos → Build (CI) com testes JUnit → Release (CD) publica o `app.jar` no Web App.
+- **Infraestrutura:** criada pelo script `infra/criar-infra.sh` no Azure Cloud Shell. Resource Group e Key Vault em South Central US; SQL e App Service em Central US (regiões permitidas e com capacidade na assinatura Azure for Students).
 
 ## Banco de dados — tabelas com relacionamento
 
-* `tb_fornecedor` **(1) ──── (N)** `tds_sec_mvc_tb_mercado` (produtos) — FK `fornecedor_id`
-* `tds_users_mercado` (1) ──── (N) `tb_pedido` (1) ──── (N) `tb_item_pedido`
+- `tb_fornecedor` **(1) ──── (N)** `tds_sec_mvc_tb_mercado` (produtos) — FK `fornecedor_id`
+- `tds_users_mercado` (1) ──── (N) `tb_pedido` (1) ──── (N) `tb_item_pedido`
 
 DDL completo: [`script.sql`](script.sql) · SELECTs de evidência: [`sql/consultas-evidencias.sql`](sql/consultas-evidencias.sql)
 
 ## CRUD na nuvem (perfil ADMIN)
 
-| Tabela | Create | Read | Update | Delete |
-|---|---|---|---|---|
-| Fornecedores | `/fornecedores/novo` | `/fornecedores` | `/fornecedores/{id}/editar` | botão **Excluir** |
-| Produtos | `/produtos/novo` (escolhe o fornecedor) | `/produtos` | `/produtos/{id}/editar` | botão **Excluir** |
+| Tabela       | Create                                  | Read            | Update                      | Delete            |
+| ------------ | --------------------------------------- | --------------- | --------------------------- | ----------------- |
+| Fornecedores | `/fornecedores/novo`                    | `/fornecedores` | `/fornecedores/{id}/editar` | botão **Excluir** |
+| Produtos     | `/produtos/novo` (escolhe o fornecedor) | `/produtos`     | `/produtos/{id}/editar`     | botão **Excluir** |
 
 Usuários de teste: `admin@mercado.com / admin123` (ADMIN) · `cliente@mercado.com / cliente123` (CLIENTE)
 
@@ -57,22 +52,22 @@ chmod +x criar-infra.sh deletar-infra.sh
 
 ## Variáveis de ambiente e dados sensíveis
 
-| Variável | Onde fica | Valor |
-|---|---|---|
-| `DB_URL` | App Service → Key Vault | `@Microsoft.KeyVault(...db-url)` |
-| `DB_USERNAME` | App Service → Key Vault | `@Microsoft.KeyVault(...db-username)` |
-| `DB_PASSWORD` | App Service → Key Vault | `@Microsoft.KeyVault(...db-password)` |
-| `RABBIT_LISTENERS` | App Service | `false` (mensageria não utilizada na nuvem) |
-| `SERVER_PORT` | App Service | `80` |
+| Variável           | Onde fica               | Valor                                       |
+| ------------------ | ----------------------- | ------------------------------------------- |
+| `DB_URL`           | App Service → Key Vault | `@Microsoft.KeyVault(...db-url)`            |
+| `DB_USERNAME`      | App Service → Key Vault | `@Microsoft.KeyVault(...db-username)`       |
+| `DB_PASSWORD`      | App Service → Key Vault | `@Microsoft.KeyVault(...db-password)`       |
+| `RABBIT_LISTENERS` | App Service             | `false` (mensageria não utilizada na nuvem) |
+| `SERVER_PORT`      | App Service             | `80`                                        |
 
 Nenhuma senha fica no repositório: a senha do banco é digitada na execução do script e gravada somente no
 Key Vault. O Web App lê os segredos com **identidade gerenciada**.
 
 ## Pipelines
 
-* **Build (CI)** — editor clássico, template Maven: `mercado-express/pom.xml` → `mvn package` (executa os testes
+- **Build (CI)** — editor clássico, template Maven: `mercado-express/pom.xml` → `mvn package` (executa os testes
   JUnit e publica os resultados) → copia `app.jar` → publica o artefato `drop`. Trigger: CI na `main`.
-* **Release (CD)** — template *Azure App Service deployment*, consome o artefato `drop` e publica o `app.jar`
+- **Release (CD)** — template _Azure App Service deployment_, consome o artefato `drop` e publica o `app.jar`
   no Web App. Trigger: Continuous deployment ao terminar o Build.
 
 ## Testes unitários (JUnit 5 + Mockito)

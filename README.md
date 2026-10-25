@@ -1,6 +1,6 @@
 # 🍌 Mercado Express — Azure Pipelines CI/CD
 
-**Grupo Doletas · 3º Checkpoint · 2º Semestre · DevOps Tools & Cloud Computing (FIAP · Prof. João Menk)**
+**Grupo mercado-express-pipelines · 3º Checkpoint · 2º Semestre · DevOps Tools & Cloud Computing (FIAP · Prof. João Menk)**
 
 Migração do App **Mercado Express** (Java 17 · Spring Boot 3 · Spring MVC + Thymeleaf + Spring Security)
 para o **Azure DevOps**, com Pipeline de **Build (CI)** com testes JUnit e Pipeline de **Release (CD)**
